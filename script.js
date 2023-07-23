@@ -1,48 +1,5 @@
 let myLibrary = [];
 
-//gloabal variables
-let _title, _author, _pages, _readStatus;
-
-const addNewBtn = document.querySelector(".add-button");
-const form = document.getElementById("bookForm");
-const addBook = document.querySelector(".add-btn");
-const cancelBtn = document.querySelector(".cancel-btn");
-
-const deleteBookBtn = document.querySelectorAll(".delete-book");
-
-document.addEventListener("click", (event) => {
-  if (event.target.classList.contains("delete-book")) {
-    event.target.parentElement.parentElement.remove();
-  }
-  if (event.target.classList.contains("read-status")) {
-    const card = event.target.parentElement.parentElement;
-    const index = Array.from(card.parentElement.children).indexOf(card);
-    const book = myLibrary[index];
-    book.updateStatus();
-    event.target.textContent = book.status;
-  }
-});
-
-addNewBtn.addEventListener("click", () => {
-  form.classList.add("active");
-});
-
-cancelBtn.addEventListener("click", () => {
-  form.classList.remove("active");
-});
-
-addBook.addEventListener("click", () => {
-  _title = document.getElementById("name-value").value;
-  _author = document.getElementById("author-value").value;
-  _pages = document.getElementById("pageNum-value").value;
-  _readStatus = document.getElementById("read").checked;
-
-  addBookToLibrary();
-
-  form.reset();
-  form.classList.remove("active");
-});
-
 class Book {
   constructor(name, author, pageNum, status) {
     this.name = name;
@@ -50,26 +7,37 @@ class Book {
     this.pageNum = pageNum;
     this.status = status;
   }
-
-  updateStatus() {
-    this.status = this.status === "Completed" ? "On Going" : "Completed";
-  }
 }
 
-function addBookToLibrary() {
-  if (_author === "" || _title === "" || _pages === "") {
-    alert("Please fill all the fields");
-    from.classList.remove("active");
-  } else {
-    myLibrary.push(new Book(_title, _author, _pages, _readStatus));
-    createBookCard(
-      _title,
-      _author,
-      _pages,
-      _readStatus ? "Completed" : "On Going"
-    );
-  }
-}
+const form = document.querySelector(".book-form");
+form.addEventListener("submit", (e) => {
+  e.preventDefault();
+});
+
+const addNewBook = document.querySelector(".add-button");
+addNewBook.addEventListener("click", () => {
+  form.classList.add("active");
+});
+
+const cancelBtn = document.querySelector(".cancel-btn");
+cancelBtn.addEventListener("click", () => {
+  form.classList.remove("active");
+});
+
+const addBook = document.querySelector(".add-btn");
+addBook.addEventListener("click", () => {
+  _title = document.getElementById("name-value").value;
+  _author = document.getElementById("author-value").value;
+  _pages = document.getElementById("pageNum-value").value;
+  _readStatus = document.getElementById("read").checked
+    ? "Completed"
+    : "On Going";
+
+  addBookToLibrary();
+
+  form.reset();
+  form.classList.remove("active");
+});
 
 function createBookCard(_title, _author, _pages, _readStatus) {
   const bookCard = document.createElement("div");
@@ -84,9 +52,57 @@ function createBookCard(_title, _author, _pages, _readStatus) {
     </div>
     <div class="button-holder">
       <img src="src/delete.svg" alt="delete" class="icon delete-book">
-      <img src="src/edit.svg" alt="edit" class="icon edit-book">
     </div>
   `;
 
   document.querySelector(".book-container").appendChild(bookCard);
+}
+
+function addBookToLibrary() {
+  if (_author === "" || _title === "" || _pages === "") {
+    alert("Please fill all the fields");
+    form.classList.remove("active");
+  } else {
+    myLibrary.push(new Book(_title, _author, _pages, _readStatus));
+  }
+  render();
+}
+
+function deleteBook(index) {
+  myLibrary.splice(index, 1);
+  render();
+}
+
+function updateStatus(index) {
+  myLibrary[index].status =
+    myLibrary[index].status === "Completed" ? "On Going" : "Completed";
+  render();
+}
+
+function attachEventListners() {
+  const deleteBtn = document.querySelectorAll(".delete-book");
+  const readBtn = document.querySelectorAll(".read-status");
+
+  deleteBtn.forEach((btn, index) => {
+    btn.addEventListener("click", () => {
+      deleteBook(index);
+    });
+  });
+
+  readBtn.forEach((btn, index) => {
+    btn.addEventListener("click", () => {
+      updateStatus(index);
+    });
+  });
+}
+
+function render() {
+  const bookContainer = document.querySelector(".book-container");
+  bookContainer.innerHTML = "";
+
+  myLibrary.forEach((book) => {
+    createBookCard(book.name, book.author, book.pageNum, book.status);
+  });
+
+  attachEventListners();
 }
